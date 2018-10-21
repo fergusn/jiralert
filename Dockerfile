@@ -3,7 +3,7 @@ FROM golang:alpine as build
 COPY . $GOPATH/src/github.com/free/jiralert
 
 RUN apk add git && \
-    go get $GOPATH/src/github.com/free/jiralert/cmd/jiralert/... && \
+    go get $GOPATH/src/github.com/free/jiralert/ && \
     go build -o jiralert $GOPATH/src/github.com/free/jiralert/cmd/jiralert
 
 FROM alpine
