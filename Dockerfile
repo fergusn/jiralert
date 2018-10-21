@@ -7,6 +7,6 @@ RUN apk add git && \
     go build -o jiralert $GOPATH/src/github.com/free/jiralert/cmd/jiralert
 
 FROM alpine
-COPY --from=build jiralert /usr/local/bin/jiralert
+COPY --from=build /go/jiralert /usr/local/bin/jiralert
 
 ENTRYPOINT ["/usr/local/bin/jiralert"]
