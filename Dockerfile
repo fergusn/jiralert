@@ -1,6 +1,6 @@
 FROM golang:alpine as build
 
-COPY . $GOPATH/src/github.com/free/jiralert/cmd/jiralert
+COPY . $GOPATH/src/github.com/free/jiralert
 
 RUN apk add git && \
     go get $GOPATH/src/github.com/free/jiralert/cmd/jiralert/... && \
