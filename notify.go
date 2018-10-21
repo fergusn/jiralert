@@ -65,16 +65,24 @@ func (r *Receiver) Notify(data *alertmanager.Data) (bool, error) {
 	}
 
 	log.Infof("No issue matching %s found, creating new issue", issueLabel)
+
+	custom := tcontainer.NewMarshalMap()
+	snapshot := r.snapshot(data)
+	if snapshot != "" {
+		custom["customfield_"+r.conf.SnapshotFieldID] = r.snapshot(data)
+	}
+
 	issue = &jira.Issue{
 		Fields: &jira.IssueFields{
 			Project:     jira.Project{Key: project},
 			Type:        jira.IssueType{Name: r.tmpl.Execute(r.conf.IssueType, data)},
 			Description: r.tmpl.Execute(r.conf.Description, data),
 			Summary:     r.tmpl.Execute(r.conf.Summary, data),
+			Components:  []*jira.Component{&jira.Component{Name: "On-Call"}},
 			Labels: []string{
 				issueLabel,
 			},
-			Unknowns: tcontainer.NewMarshalMap(),
+			Unknowns: custom,
 		},
 	}
 	if r.conf.Priority != "" {
@@ -215,6 +223,35 @@ func (r *Receiver) create(issue *jira.Issue) (bool, error) {
 
 	log.V(1).Infof("  done: key=%s ID=%s", issue.Key, issue.ID)
 	return false, nil
+}
+
+func (r *Receiver) snapshot(data *alertmanager.Data) string {
+	url := r.conf.GrafanaURL
+	token := r.conf.GrafanaToken
+	uid := data.CommonLabels["dashboard"]
+
+	if url == "" || token == "" || uid == "" {
+		return ""
+	}
+
+	grafana := Grafana{
+		URL:   url,
+		Token: token,
+	}
+
+	dashboard, err := grafana.dashboard(uid)
+
+	if err != nil {
+		return ""
+	}
+
+	snapshot, err := grafana.snapshot(dashboard)
+
+	if err != nil {
+		return ""
+	}
+
+	return snapshot.URL
 }
 
 func handleJiraError(api string, resp *jira.Response, err error) (bool, error) {

@@ -99,6 +99,10 @@ type ReceiverConfig struct {
 
 	// Catches all undefined fields and must be empty after parsing.
 	XXX map[string]interface{} `yaml:",inline" json:"-"`
+
+	GrafanaURL      string `yaml:"grafana_url" json:"grafana_url"`
+	GrafanaToken    string `yaml:"grafana_token" json:"grafana_token"`
+	SnapshotFieldID string `yaml:"snapshot_field_id" json:"snapshot_field_id"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface.
